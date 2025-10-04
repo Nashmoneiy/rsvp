@@ -5,6 +5,8 @@ import backgroundImage from "../assets/images/5a9c70da1591e3354c8ff22291459a40.j
 //import backgroundImage from "../assets/images/935e4886bfa6e3ff8910593af4018113.jpg";
 import cardImage from "../assets/images/Wedding Invitation.png";
 import musicFile from "../assets/music/Mercy-Chinwo-Wonder.mp3"; // 🎵 A
+import axios from "axios";
+import Swal from "sweetalert2";
 
 export default function Invitation() {
   const [open, setOpen] = useState(false);
@@ -12,6 +14,54 @@ export default function Invitation() {
   const [showRSVP, setShowRSVP] = useState(false);
   const [loading, setLoading] = useState(true);
   const [playMusic, setPlayMusic] = useState(true);
+
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [code, setCode] = useState("");
+  const [attending, setAttending] = useState("");
+  // const [errorMessage, setErrorMessage] = useState("");
+  // const [successMessage, setSuccessMessage] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.post(
+        "https://invitation-production-a234.up.railway.app/api/rsvp",
+        {
+          name,
+          phone,
+          code,
+          attending,
+        }
+      );
+
+      Swal.fire({
+        icon: "success",
+        title: "RSVP Submitted!",
+        text: response.data.message,
+        confirmButtonColor: "#3085d6",
+      });
+
+      setShowRSVP(false); // close modal after success
+    } catch (error) {
+      let message = "Something went wrong. Please try again.";
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        message = error.response.data.message;
+      }
+
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: message,
+        confirmButtonColor: "#d33",
+      });
+    }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -39,7 +89,7 @@ export default function Invitation() {
         <div
           className="spinner-border text-warning"
           role="status"
-          style={{ width: "6rem", height: "6rem", animationDuration: "2s" }}
+          style={{ width: "3rem", height: "3rem", animationDuration: "2s" }}
         >
           <span className="visually-hidden">Loading...</span>
         </div>
@@ -75,9 +125,8 @@ export default function Invitation() {
         {/* Envelope with spin */}
         <motion.div
           initial={{ rotate: 0 }}
-          animate={open && !spun ? { rotate: 360 } : {}}
-          transition={{ duration: 1.5, ease: "easeInOut" }}
-          onAnimationComplete={() => setSpun(true)}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1.5, ease: "linear" }}
           className="position-absolute w-100 h-100"
         >
           <div
@@ -185,39 +234,53 @@ export default function Invitation() {
             style={{ width: "90%", maxWidth: "400px" }}
           >
             <h3 className="text-warning mb-4">RSVP</h3>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                alert("RSVP Submitted!");
-                setShowRSVP(false);
-              }}
-            >
+            <form onSubmit={handleSubmit}>
               <input
                 type="text"
                 placeholder="Your Name"
                 required
                 className="form-control mb-3"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
               />
-              <input
+
+              {/* <input
                 type="text"
                 placeholder="Phone number"
                 required
                 className="form-control mb-3"
-              />
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              /> */}
+
               <input
                 type="text"
                 placeholder="OTP"
                 required
                 className="form-control mb-3"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
               />
-              <select required className="form-select mb-3">
+
+              <select
+                required
+                className="form-select mb-3"
+                value={attending}
+                onChange={(e) => setAttending(e.target.value)}
+              >
                 <option value="">Will you attend?</option>
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
               </select>
-              <button type="submit" className="btn btn-warning w-100 mb-2">
+
+              <button
+                type="submit"
+                className="btn w-100 mb-2"
+                style={{ backgroundColor: "#C59068" }}
+              >
                 Submit
               </button>
+
               <button
                 type="button"
                 className="btn btn-secondary w-100"
